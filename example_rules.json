@@ -1,0 +1,287 @@
+[
+
+  {
+
+    "description": "If visit_status is 'Discharged', then discharge_date must be greater than or equal to admission_date.",
+
+    "category": "Temporal Order Checking Rule",
+
+    "target_columns": [
+
+      "visit_status",
+
+      "discharge_date",
+
+      "admission_date"
+
+    ],
+
+    "value_mentions": {
+
+      "visit_status": [
+
+        "Discharged"
+
+      ]
+
+    }
+
+  },
+
+  {
+
+    "description": "If visit_status is 'Admitted', then discharge_date must be null.",
+
+    "category": "Conditional Completeness Checking Rule",
+
+    "target_columns": [
+
+      "visit_status",
+
+      "discharge_date"
+
+    ],
+
+    "value_mentions": {
+
+      "visit_status": [
+
+        "Admitted"
+
+      ]
+
+    }
+
+  },
+
+  {
+
+    "description": "If department_name is 'Pediatrics', the patient must be under 18 years old (based on date_of_birth and admission_date).",
+
+    "category": "Value Association Rule",
+
+    "target_columns": [
+
+      "department_name",
+
+      "date_of_birth",
+
+      "admission_date"
+
+    ],
+
+    "value_mentions": {
+
+      "department_name": [
+
+        "Pediatrics"
+
+      ]
+
+    }
+
+  },
+
+  {
+
+    "description": "If bed_type is 'ICU' (Intensive Care Unit), the treatment_cost must be at least 5000.",
+
+    "category": "Value Association Rule",
+
+    "target_columns": [
+
+      "bed_type",
+
+      "treatment_cost"
+
+    ],
+
+    "value_mentions": {
+
+      "bed_type": [
+
+        "ICU"
+
+      ],
+
+      "treatment_cost": [
+
+        5000
+
+      ]
+
+    }
+
+  },
+
+  {
+
+    "description": "The diagnosis_code must follow the ICD-10 format, typically a letter followed by two or three digits (e.g., 'J09' or 'E11.9'). Regex: '^[A-Z][0-9]{2}(\\.[0-9]{1,2})?$'",
+
+    "category": "Domain-Specific Format Checking Rule",
+
+    "target_columns": [
+
+      "diagnosis_code"
+
+    ],
+
+    "value_mentions": {
+
+      "diagnosis_code": [
+
+        "^[A-Z][0-9]{2}(\\.[0-9]{1,2})?$"
+
+      ]
+
+    }
+
+  },
+
+  {
+
+    "description": "treatment_cost must always be greater than or equal to insurance_coverage.",
+
+    "category": "Amount Comparison Rule",
+
+    "target_columns": [
+
+      "treatment_cost",
+
+      "insurance_coverage"
+
+    ],
+
+    "value_mentions": null
+
+  },
+
+  {
+
+    "description": "If department_name is 'Maternity', the patient_gender implied or stored (if available) implies logic, but specifically blood_type cannot be null.",
+
+    "category": "Conditional Completeness Checking Rule",
+
+    "target_columns": [
+
+      "department_name",
+
+      "blood_type"
+
+    ],
+
+    "value_mentions": {
+
+      "department_name": [
+
+        "Maternity"
+
+      ]
+
+    }
+
+  },
+
+  {
+
+    "description": "For any given visit_id, the combination of patient_id and admission_date must be unique.",
+
+    "category": "Unique Key Constraint Checking Rule",
+
+    "target_columns": [
+
+      "visit_id",
+
+      "patient_id",
+
+      "admission_date"
+
+    ],
+
+    "value_mentions": null
+
+  },
+
+  {
+
+    "description": "If bed_type is 'Standard', the room_number must be between 100 and 500. If 'ICU', room_number must be between 600 and 699.",
+
+    "category": "Complex Conditional Range Rule",
+
+    "target_columns": [
+
+      "bed_type",
+
+      "room_number"
+
+    ],
+
+    "value_mentions": {
+
+      "bed_type": [
+
+        "Standard",
+
+        "ICU"
+
+      ]
+
+    }
+
+  },
+
+  {
+
+    "description": "emergency_contact must follow a valid phone number format (e.g., '+1-XXX-XXX-XXXX' or similar local format).",
+
+    "category": "Format Checking Rule",
+
+    "target_columns": [
+
+      "emergency_contact"
+
+    ],
+
+    "value_mentions": null
+
+  },
+
+  {
+
+    "description": "If doctor_id is present, the department_id associated with that doctor must match the department_id of the admission record (Consistency Check).",
+
+    "category": "Functional Dependency (FD) Checking Rule",
+
+    "target_columns": [
+
+      "doctor_id",
+
+      "department_id"
+
+    ],
+
+    "value_mentions": null
+
+  },
+
+  {
+
+    "description": "For the same department_id, the average treatment_cost for 'ICU' beds should be significantly higher than for 'Standard' beds.",
+
+    "category": "Statistical Outlier / Group Comparison Rule",
+
+    "target_columns": [
+
+      "department_id",
+
+      "bed_type",
+
+      "treatment_cost"
+
+    ],
+
+    "value_mentions": null
+
+  }
+
+]
