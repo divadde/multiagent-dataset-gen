@@ -38,6 +38,7 @@ class GraphState(TypedDict):
     # Input iniziale
     user_instructions: str  # Schema e regole JSON/Testo
     output_path: str  # Dove salvare il CSV
+    script_output_path: str  # <--- NUOVO: Dove salvare lo script Python
 
     # Stato interno
     generated_code: str  # Il codice Python corrente
@@ -59,15 +60,13 @@ import traceback
 
 # Inizializza il modello (o usa Gemini qui)
 llm = ChatOpenAI(
-    model="gpt-5.1-codex-max",  # Oppure "gpt-5.1-codex-max" per task più complessi
+    model="gpt-5.2",  # Oppure "gpt-5.1-codex-max" per task più complessi
     temperature=0,
     use_responses_api=True, # Fondamentale per i modelli della serie Codex/GPT-5
     reasoning_effort="high" # Opzionale: "low", "medium", "high" (solo per modelli reasoning)
 )
 
-# --- 0. CARICAMENTO DEL REFERENCE CODE (Il contenuto del file caricato) ---
-# In un ambiente reale, potresti leggerlo da file: open("trial_dataset_gen.py").read()
-# Qui lo includiamo come stringa per completezza del prompt.
+llm_check = ChatOpenAI(model="gpt-5.2", temperature=0, reasoning_effort="high")
 
 REFERENCE_CODE_CONTENT = """
 import pandas as pd
@@ -517,10 +516,8 @@ def code_executor_node(state: GraphState):
             "validation_error": error_msg
         }
 
-llm_check = ChatOpenAI(model="gpt-5.1", temperature=1)
-
 def hallucination_check_node(state: GraphState):
-    print("--- VERIFY LOGICA (HALLUCINATION CHECK) ---")
+    print("--- VERIFY LOGIC (HALLUCINATION CHECK) ---")
 
     rules = state["user_instructions"]
     code = state["generated_code"]
@@ -546,13 +543,70 @@ def hallucination_check_node(state: GraphState):
         return {"validation_error": feedback}  # Questo feedback torna al generatore
 
 
-# --- NODO 4: SALVATAGGIO FILE ---
+# --- NODO 4: SALVATAGGIO FILE INTELLIGENTE (CSV + PYTHON + WARNING) ---
 def file_saver_node(state: GraphState):
-    print("--- SAVING CSV ---")
+    print("--- SAVING OUTPUTS ---")
+
+    csv_path = state["output_path"]
+    script_path = state["script_output_path"]
+
+    # Costruiamo il path per il warning report (es. dataset_WARNING.txt)
+    base_name = csv_path.rsplit('.', 1)[0]
+    warning_path = f"{base_name}_WARNING_REPORT.txt"
+
+    # 1. Salvataggio Script Python (Sempre utile per il debug)
+    if state["generated_code"]:
+        try:
+            with open(script_path, "w", encoding="utf-8") as f:
+                f.write(state["generated_code"])
+            print(f"✅ Python Script saved to: {script_path}")
+        except Exception as e:
+            print(f"⚠️ Warning: Could not save python script: {e}")
+
+    # 2. Salvataggio CSV (Solo se il dataframe esiste)
     df = state["dataframe_obj"]
-    path = state["output_path"]
-    df.to_csv(path, index=False)
-    return {"code_output": f"Csv saved correctly in: {path}"}
+    if df is not None:
+        try:
+            df.to_csv(csv_path, index=False)
+            print(f"✅ CSV saved to: {csv_path}")
+        except Exception as e:
+            print(f"❌ Error saving CSV: {e}")
+    else:
+        print("⚠️ No DataFrame generated to save (Execution crashed).")
+
+    # 3. Salvataggio Warning Report (Solo se c'è un errore attivo)
+    # Verifichiamo se siamo qui perché è fallita la validazione o l'esecuzione
+    error_msg = state.get("validation_error")
+
+    # Se non c'è errore di validazione, magari c'è stato un crash di esecuzione
+    if not error_msg and not state.get("execution_success"):
+        error_msg = state.get("code_output")  # Prende lo stacktrace dell'errore
+
+    if error_msg:
+        try:
+            report_content = (
+                f"⚠️ SYNTHETIC DATA GENERATION FAILED (PARTIALLY) ⚠️\n"
+                f"==================================================\n"
+                f"Timestamp: {datetime.now()}\n"
+                f"Attempts made: {state['iterations']}\n\n"
+                f"CRITICAL ERROR DETAILS:\n"
+                f"-----------------------\n"
+                f"{error_msg}\n\n"
+                f"STATUS:\n"
+                f"- Python Script: Saved ({script_path})\n"
+                f"- Dataset CSV: {'Saved (Potential logical errors)' if df is not None else 'Not Saved (Code crash)'}\n"
+            )
+
+            with open(warning_path, "w", encoding="utf-8") as f:
+                f.write(report_content)
+
+            print(f"🚨 WARNING REPORT saved to: {warning_path}")
+            return {"code_output": f"Process completed with WARNINGS. See {warning_path}"}
+
+        except Exception as e:
+            print(f"❌ Error saving warning report: {e}")
+
+    return {"code_output": "Process completed successfully."}
 
 
 from langgraph.graph import StateGraph, END
@@ -578,54 +632,75 @@ def build_synt_data_agent():
     workflow.add_node("generator", code_generator_node)
     workflow.add_node("executor", code_executor_node)
     workflow.add_node("validator", hallucination_check_node)
+
+    # NOTA: Usiamo file_saver_node sia per il successo che per il fallimento
     workflow.add_node("saver", file_saver_node)
-    workflow.add_node("fail_end", lambda x: print("--- LIMITE TENTATIVI RAGGIUNTO ---"))
+
+    # Il nodo fail_end diventa ridondante se vogliamo sempre salvare,
+    # ma possiamo tenerlo per logica interna o rimuoverlo.
+    # Qui lo rimuoviamo dal flusso "failed" delle conditional edges.
 
     workflow.set_entry_point("generator")
-
     workflow.add_edge("generator", "executor")
 
+    # Routing dopo Esecuzione
     workflow.add_conditional_edges(
         "executor",
         route_after_execution,
         {
             "retry_coding": "generator",
             "check_hallucination": "validator",
-            "failed": "fail_end"
+            "failed": "saver"  # <--- CAMBIAMENTO: Se fallisce max retries, vai a salvare
         }
     )
 
+    # Routing dopo Validazione
     workflow.add_conditional_edges(
         "validator",
         route_after_check,
         {
             "retry_coding": "generator",
-            "save_file": "saver",
-            "failed": "fail_end"
+            "save_file": "saver",  # Successo
+            "failed": "saver"  # <--- CAMBIAMENTO: Se fallisce max retries, vai a salvare comunque
         }
     )
 
     workflow.add_edge("saver", END)
-    workflow.add_edge("fail_end", END)
 
-    # Compilazione
     app = workflow.compile()
     return app
+
 
 # --- PUBLIC PROXY FUNCTION ---
 def generate_synthetic_dataset(
         num_rows: int,
-        schema: Union[List[str],str],
+        schema: Union[List[str], str],
         rules: List[Dict],
         output_path: str = "synthetic_dataset.csv",
+        script_output_path: Optional[str] = None,  # <--- NUOVO PARAMETRO
         max_retries: int = 3
 ) -> Optional[pd.DataFrame]:
     """
     Proxy function to generate synthetic datasets, hiding LangGraph complexity.
+
+    Args:
+        ...
+        script_output_path (str, optional): Path where to save the .py generation script.
+                                            If None, defaults to output_path with .py extension.
     """
 
+    # Logica per determinare il nome del file script se non fornito
+    if script_output_path is None:
+        # Se output_path è "data.csv", script diventa "data_generation.py"
+        base_name = output_path.rsplit('.', 1)[0]
+        script_output_path = f"{base_name}_gen.py"
+
     # 1. Build Structured User Prompt
-    schema_str = ", ".join(schema)
+    if isinstance(schema, list):
+        schema_str = ", ".join(schema)
+    else:
+        schema_str = schema
+
     rules_str = json.dumps(rules, indent=2)
 
     user_prompt = (
@@ -640,6 +715,7 @@ def generate_synthetic_dataset(
     initial_state = {
         "user_instructions": user_prompt,
         "output_path": output_path,
+        "script_output_path": script_output_path,  # <--- Inseriamo il path nello stato
         "iterations": 0,
         "max_iterations": max_retries,
         "validation_error": None,
@@ -661,15 +737,30 @@ def generate_synthetic_dataset(
         traceback.print_exc()
         return None
 
-    # 4. Handle Result
-    if final_state.get("dataframe_obj") is not None and not final_state.get("validation_error"):
+    # 4. Handle Result (Logica aggiornata)
+    df = final_state.get("dataframe_obj")
+    validation_err = final_state.get("validation_error")
+    execution_success = final_state.get("execution_success")
+
+    # CASO A: Successo Totale
+    if df is not None and not validation_err and execution_success:
         print(f"\n✅ GENERATION COMPLETED SUCCESSFULLY!")
-        print(f"💾 File saved to: {output_path}")
-        return final_state["dataframe_obj"]
+        print(f"💾 CSV saved to: {output_path}")
+        print(f"🐍 Script saved to: {script_output_path}")
+        return df
+
+    # CASO B: Fallimento Parziale (CSV generato ma regole violate)
+    elif df is not None:
+        print(f"\n⚠️ GENERATION COMPLETED WITH WARNINGS.")
+        print(f"The dataset was generated and saved, BUT logic validation failed.")
+        print(f"💾 CSV saved to: {output_path} (Check carefully!)")
+        print(f"🐍 Script saved to: {script_output_path}")
+        print(f"🚨 Read the warning report for details.")
+        return df  # Restituiamo comunque il DF per permettere all'utente di ispezionarlo
+
+    # CASO C: Fallimento Totale (Crash codice, niente CSV)
     else:
-        print(f"\n❌ GENERATION FAILED after {final_state['iterations']} attempts.")
-        if final_state.get("validation_error"):
-            print(f"Last Validation Error: {final_state['validation_error']}")
-        elif not final_state.get("execution_success"):
-            print(f"Execution Error: {final_state.get('code_output')}")
+        print(f"\n❌ GENERATION FAILED COMPLETELY (No CSV created).")
+        print(f"🐍 Script saved to: {script_output_path} (for debugging)")
+        print(f"Execution Error: {final_state.get('code_output')}")
         return None

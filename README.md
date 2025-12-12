@@ -67,6 +67,32 @@ def generate_synthetic_dataset(
 ) -> Optional[pd.DataFrame]
 ```
 
+## 📂 Output & Artifacts
+
+For every execution, **SynthData Architect** generates a set of files in your specified output location. The system is designed to preserve as much work as possible, even in case of errors ("Graceful Failure").
+
+### Generated Files
+
+1.  **📊 Dataset (`.csv`)**
+    * The final synthetic dataset containing the generated rows.
+    * *Saved when:* Execution is successful (even if validation fails).
+
+2.  **🐍 Source Code (`.py`)**
+    * The complete, executable Python script written by the AI Agent. You can run this script manually to reproduce the data or debug issues.
+    * *Saved when:* Always (as long as the Agent generated code).
+
+3.  **🚨 Warning Report (`_WARNING_REPORT.txt`)**
+    * A diagnostic file containing the error log, the list of failed rules, or the stack trace of a crash.
+    * *Saved when:* Validation fails (Partial Success) or Code crashes (Total Failure).
+
+### Execution Scenarios
+
+| Outcome | CSV Created? | Script (`.py`)? | Warning Report? | Description |
+| :--- | :---: | :---: | :---: | :--- |
+| **✅ Success** | YES | YES | NO | The dataset was generated and passed **all** validation rules strictly. |
+| **⚠️ Partial Success** | **YES** | YES | **YES** | The dataset was generated, but **some rules failed validation** after max retries. The CSV is available for inspection, but you should check the Report. |
+| **❌ Total Failure** | NO | YES | **YES** | The generated code crashed during execution (e.g., Memory Error, Syntax Error). No data could be produced. Use the saved `.py` script to debug. |
+
 ## 🧠 Architecture
 
 SynthData Architect leverages **LangGraph** to orchestrate a stateful, cyclical workflow of AI Agents. This ensures that the generated data is not just "plausible" looking, but strictly adheres to the requested constraints.
