@@ -441,6 +441,7 @@ def code_generator_node(state: GraphState):
         ("user", "{user_msg}")
     ])
 
+    print(prompt.invoke({"user_msg": user_msg_content, "reference_code": REFERENCE_CODE_CONTENT}))
     chain = prompt | llm
 
     response = chain.invoke({
@@ -678,7 +679,7 @@ def generate_synthetic_dataset(
         rules: List[Dict],
         output_path: str = "synthetic_dataset.csv",
         script_output_path: Optional[str] = None,  # <--- NUOVO PARAMETRO
-        max_retries: int = 3
+        max_retries: int = 2
 ) -> Optional[pd.DataFrame]:
     """
     Proxy function to generate synthetic datasets, hiding LangGraph complexity.
