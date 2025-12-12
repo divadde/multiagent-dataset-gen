@@ -1,7 +1,7 @@
 # --- EXAMPLE USAGE ---
 import json
 
-from synt_data_architect import generate_synthetic_dataset
+from synth_data_architect import generate_synthetic_dataset
 
 if __name__ == "__main__":
     # Example Parameters
