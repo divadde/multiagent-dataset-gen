@@ -50,6 +50,8 @@ class GraphState(TypedDict):
     iterations: int  # Contatore tentativi
     max_iterations: int  # Limite massimo (es. 4)
 
+    error_history: List[str]
+
 
 from langchain_openai import ChatOpenAI, OpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -406,17 +408,33 @@ You must output **ONLY** the Python code inside a markdown code block.
 def code_generator_node(state: GraphState):
     print(f"--- CODE GENERATION (Attempt {state['iterations'] + 1}) ---")
 
-    user_msg_content = f"**USER INSTRUCTIONS & RULES:**\n{state['user_instructions']}"
+    # Recupera lo storico attuale (o lista vuota se None)
+    current_history = state.get("error_history", [])
 
-    # If we are in refinement (Refinement Loop)
+    # Se c'è un errore dal tentativo precedente, lo aggiungiamo allo storico
     if state.get("validation_error"):
+        new_error_entry = (
+            f"Attempt {state['iterations']}:\n"
+            f"Error: {state['validation_error']}\n"
+            f"Code snippet responsible (context): See previous code execution."
+        )
+        current_history.append(new_error_entry)
+
+    user_msg_content = f"**USER INSTRUCTIONS & RULES:**\n{state['user_instructions']}\n\nSuggestion: Do not use 'if __name__ == __main__' directly."
+
+    # Se abbiamo uno storico di errori, lo iniettiamo nel prompt
+    if current_history:
+        history_text = "\n\n".join(current_history)
         user_msg_content += (
-            f"\n\n!!! CRITICAL ERROR IN PREVIOUS ATTEMPT !!!\n"
-            f"The previous code failed with the following error:\n"
-            f"--------------------------------------------------\n"
-            f"{state['validation_error']}\n"
-            f"--------------------------------------------------\n"
-            f"FIX the code immediately."
+            f"\n\n!!! HISTORY OF PREVIOUS FAILURES !!!\n"
+            f"You have already tried to generate this code {len(current_history)} times. "
+            f"Here is the log of past errors you MUST avoid repeating:\n"
+            f"==================================================\n"
+            f"{history_text}\n"
+            f"==================================================\n"
+            f"CRITICAL INSTRUCTION: Analyze the entire history above. "
+            f"Do not revert to old code that caused these errors. "
+            f"Implement a NEW solution that fixes the latest error without re-introducing previous ones."
         )
 
     prompt = ChatPromptTemplate.from_messages([
@@ -431,9 +449,9 @@ def code_generator_node(state: GraphState):
         "user_msg": user_msg_content
     })
 
+    # --- Logica di estrazione codice (invariata) ---
     content_data = response.content
     code_text = ""
-
     if isinstance(content_data, list):
         for block in content_data:
             if isinstance(block, dict) and block.get('type') == 'text':
@@ -442,15 +460,16 @@ def code_generator_node(state: GraphState):
     else:
         code_text = str(content_data)
 
-    # Cleanup Markdown
     clean_code = code_text.replace("```python", "").replace("```", "").strip()
-    # ----------------------------------
-    print(f"Code generated:\n\n{clean_code}")
+    # -----------------------------------------------
+
+    print(f"Code generated (Length: {len(clean_code)} chars)")
 
     return {
         "generated_code": clean_code,
         "iterations": state["iterations"] + 1,
-        "validation_error": None
+        "validation_error": None,  # Resettiamo l'errore corrente perché stiamo provando una fix
+        "error_history": current_history  # Passiamo lo storico aggiornato al prossimo step
     }
 
 
@@ -627,7 +646,8 @@ def generate_synthetic_dataset(
         "execution_success": False,
         "generated_code": "",
         "code_output": "",
-        "dataframe_obj": None
+        "dataframe_obj": None,
+        "error_history": [],
     }
 
     print(f"🚀 Starting Dataset generation ({num_rows} rows)...")
