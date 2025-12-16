@@ -1,0 +1,92 @@
+[
+  {
+    "description": "The filing_date must be less than or equal to the payment_date (if payment is made). You cannot pay for a return before it exists/is filed.",
+    "category": "1. Temporal Order Checking Rules",
+    "target_columns": ["filing_date", "payment_date"],
+    "value_mentions": null
+  },
+  {
+    "description": "The zip_code determines the state. The same US zip code must always map to the same state.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["zip_code", "state"],
+    "value_mentions": null
+  },
+  {
+    "description": "If tax_year is '2023', then form_type implies the due_date (e.g., all '1040' forms in 2023 have the same due date). In other years, the date might differ due to weekends/holidays.",
+    "category": "3. Conditional Functional Dependency (CFD) Rules",
+    "target_columns": ["tax_year", "form_type", "due_date"],
+    "value_mentions": {
+      "tax_year": ["2023"]
+    }
+  },
+  {
+    "description": "If a record has an original_return_id (meaning it is an amendment), the filing_date of this amendment must be later than the filing_date of the original return.",
+    "category": "4. Intra-Table Reference Based Rules",
+    "target_columns": ["filing_date", "original_return_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "The combination of taxpayer_id, tax_year, and original_return_id (if null) must be unique to ensure no duplicate primary filings for the same year.",
+    "category": "5. Unique Key Constraint Checking Rules",
+    "target_columns": ["taxpayer_id", "tax_year", "original_return_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "Detect fuzzy duplicates in city names to standardize entries like 'New York' and 'New York City' or 'N.Y.C'.",
+    "category": "6. Advanced Duplicate Detection",
+    "target_columns": ["city"],
+    "value_mentions": null
+  },
+  {
+    "description": "If refund_amount is greater than 0, then tax_liability must be less than withholding_amount.",
+    "category": "7. Implication Rules (Conditional Logic)",
+    "target_columns": ["refund_amount", "tax_liability", "withholding_amount"],
+    "value_mentions": null
+  },
+  {
+    "description": "The taxpayer_id must follow the SSN format (XXX-XX-XXXX) or EIN format (XX-XXXXXXX). Regex: '^\\d{3}-\\d{2}-\\d{4}|\\d{2}-\\d{7}$'",
+    "category": "8. Syntactic Rules",
+    "target_columns": ["taxpayer_id"],
+    "value_mentions": {
+      "taxpayer_id": ["^\\d{3}-\\d{2}-\\d{4}|\\d{2}-\\d{7}$"]
+    }
+  },
+  {
+    "description": "The form_type must be a valid IRS code such as '1040', '1040-SR', '1120', or '1065'.",
+    "category": "9. Domain-Specific Syntactic Rules",
+    "target_columns": ["form_type"],
+    "value_mentions": {
+      "form_type": ["1040", "1040-SR", "1120", "1065"]
+    }
+  },
+  {
+    "description": "The city field length should strictly be shorter than the state field length is invalid logic, but conventionally checking that state is exactly 2 chars vs city being longer fits this rule type.",
+    "category": "10. Comparison Syntactic Rules",
+    "target_columns": ["city", "state"],
+    "value_mentions": null
+  },
+  {
+    "description": "taxable_income must always be less than or equal to gross_income.",
+    "category": "11. Amount Comparison Rules",
+    "target_columns": ["taxable_income", "gross_income"],
+    "value_mentions": null
+  },
+  {
+    "description": "Grouped by preparer_id, the average audit_risk_score should not exceed a specific threshold (e.g., check for fraudulent preparers).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["preparer_id", "audit_risk_score"],
+    "value_mentions": null
+  },
+  {
+    "description": "As taxable_income increases, the tax_liability must non-decrease (progressive tax system check).",
+    "category": "13. Monotonicity Rules",
+    "target_columns": ["taxable_income", "tax_liability"],
+    "value_mentions": null
+  },
+  {
+    "description": "The total_deductions should not be greater than 80% of gross_income (statistical outlier check for potential audit).",
+    "category": "14. Outlier Detection Rules",
+    "target_columns": ["total_deductions", "gross_income"],
+    "value_mentions": null
+  }
+]

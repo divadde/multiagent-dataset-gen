@@ -1,0 +1,92 @@
+[
+  {
+    "description": "The ship_date must not be earlier than the order_date.",
+    "category": "1. Temporal Order Checking Rules",
+    "target_columns": ["ship_date", "order_date"],
+    "value_mentions": null
+  },
+  {
+    "description": "The shipping_zip_code implies the shipping_city. The same zip code must always map to the same city.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["shipping_zip_code", "shipping_city"],
+    "value_mentions": null
+  },
+  {
+    "description": "If product_category is 'Retail', then product_id determines unit_price. (Meaning: for Retail items, the price is fixed per ID; for other categories like 'Auction' or 'SecondHand', the price for the same ID might vary).",
+    "category": "3. Conditional Functional Dependency (CFD) Rules",
+    "target_columns": ["product_category", "product_id", "unit_price"],
+    "value_mentions": {
+      "product_category": ["Retail"]
+    }
+  },
+  {
+    "description": "If an order has a parent_order_id, the order_date of the child order must be greater than or equal to the order_date of the parent order.",
+    "category": "4. Intra-Table Reference Based Rules",
+    "target_columns": ["order_date", "parent_order_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "The line_item_id must be unique across the entire dataset.",
+    "category": "5. Unique Key Constraint Checking Rules",
+    "target_columns": ["line_item_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "Detect near-duplicates in product_name to group items like 'Sony WH-1000XM4' and 'Sony Headphones WH1000XM4' as the same entity.",
+    "category": "6. Advanced Duplicate Detection",
+    "target_columns": ["product_name"],
+    "value_mentions": null
+  },
+  {
+    "description": "If return_requested is 'True', then return_date must not be empty.",
+    "category": "7. Implication Rules (Conditional Completeness)",
+    "target_columns": ["return_requested", "return_date"],
+    "value_mentions": {
+      "return_requested": ["True"]
+    }
+  },
+  {
+    "description": "The customer_email must follow a valid email pattern (e.g., user@domain.com).",
+    "category": "8. Syntactic Rules",
+    "target_columns": ["customer_email"],
+    "value_mentions": null
+  },
+  {
+    "description": "The product_url must be a valid URL pointing to the specific domain 'shop-example.com'.",
+    "category": "9. Domain-Specific Syntactic Rules",
+    "target_columns": ["product_url"],
+    "value_mentions": {
+      "product_url": ["shop-example.com"]
+    }
+  },
+  {
+    "description": "The product_name must be shorter (in character length) than the product_description.",
+    "category": "10. Comparison Syntactic Rules",
+    "target_columns": ["product_name", "product_description"],
+    "value_mentions": null
+  },
+  {
+    "description": "The discount_amount must be less than or equal to the unit_price multiplied by quantity.",
+    "category": "11. Amount Comparison Rules",
+    "target_columns": ["discount_amount", "unit_price", "quantity"],
+    "value_mentions": null
+  },
+  {
+    "description": "Grouped by order_id, the sum of final_total for all line items must equal the recorded total payment transaction (consistency check).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["order_id", "final_total"],
+    "value_mentions": null
+  },
+  {
+    "description": "In a product version history (if applicable), later models (higher product_id) should generally not have a lower unit_price than significantly older models of the same category (Monotonicity check).",
+    "category": "13. Monotonicity Rules",
+    "target_columns": ["product_id", "unit_price"],
+    "value_mentions": null
+  },
+  {
+    "description": "The unit_price for products in the same product_category should not deviate by more than 3 standard deviations from the category average.",
+    "category": "14. Outlier Detection Rules",
+    "target_columns": ["product_category", "unit_price"],
+    "value_mentions": null
+  }
+]

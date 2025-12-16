@@ -60,7 +60,7 @@ import traceback
 
 # Inizializza il modello (o usa Gemini qui)
 llm = ChatOpenAI(
-    model="gpt-5.2",  # Oppure "gpt-5.1-codex-max" per task più complessi
+    model="gpt-5.1-codex-max",  # Oppure "gpt-5.1-codex-max" per task più complessi
     temperature=0,
     use_responses_api=True, # Fondamentale per i modelli della serie Codex/GPT-5
     reasoning_effort="high" # Opzionale: "low", "medium", "high" (solo per modelli reasoning)
@@ -441,7 +441,9 @@ def code_generator_node(state: GraphState):
         ("user", "{user_msg}")
     ])
 
-    print(prompt.invoke({"user_msg": user_msg_content, "reference_code": REFERENCE_CODE_CONTENT}))
+    # Debugging
+    #print(prompt.invoke({"user_msg": user_msg_content, "reference_code": REFERENCE_CODE_CONTENT}))
+
     chain = prompt | llm
 
     response = chain.invoke({
