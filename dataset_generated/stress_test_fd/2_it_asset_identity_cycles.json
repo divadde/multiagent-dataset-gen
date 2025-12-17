@@ -1,0 +1,78 @@
+[
+  {
+    "description": "The employee_id determines the corporate_username. Each employee identifier must always map to the same corporate username.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["employee_id", "corporate_username"],
+    "value_mentions": null
+  },
+  {
+    "description": "The corporate_username determines the email_address. A given corporate username must always be associated with the same email address.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["corporate_username", "email_address"],
+    "value_mentions": null
+  },
+  {
+    "description": "The email_address determines the employee_id. Each email address uniquely identifies a single employee.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["email_address", "employee_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "The email_address determines the device_id. An employee email address is always associated with the same assigned device.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["email_address", "device_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "The device_id determines the device_serial_number. Each device identifier must always map to the same serial number.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["device_id", "device_serial_number"],
+    "value_mentions": null
+  },
+  {
+    "description": "The device_serial_number determines the device_id. Each serial number uniquely identifies a single device.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["device_serial_number", "device_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "The combination of employee_id and device_id determines the access_badge_id. An employee using a specific device must be associated with a single access badge.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["employee_id", "device_id", "access_badge_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "The access_badge_id determines the employee_id. Each access badge must always belong to the same employee.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["access_badge_id", "employee_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "The combination of corporate_username and device_serial_number determines the device_id. The same username using the same device serial number must always refer to the same device identifier.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["corporate_username", "device_serial_number", "device_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "The access_badge_id determines the corporate_username. Each access badge must always be linked to the same corporate username.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["access_badge_id", "corporate_username"],
+    "value_mentions": null
+  },
+  {
+    "description": "The employee_id must not be unique. Repetitions are required to test the consistency of username and email assignments.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": [
+      "employee_id"
+    ],
+    "value_mentions": null
+  },
+  {
+    "description": "The device_id must not be unique. Repetitions are required to test the consistency of device serial numbers.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": [
+      "device_id"
+    ],
+    "value_mentions": null
+  }
+]

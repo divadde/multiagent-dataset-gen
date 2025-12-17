@@ -1,0 +1,38 @@
+[
+    {
+        "description": "The course_id determines the course_name. The same course identifier must always map to the same course name.",
+        "category": "2. Functional Dependency (FD) Checking Rules",
+        "target_columns": [
+            "course_id",
+            "course_name"
+        ],
+        "value_mentions": null
+    },
+    {
+        "description": "The course_id determines the number_of_credits. A given course identifier must always have the same number of credits.",
+        "category": "2. Functional Dependency (FD) Checking Rules",
+        "target_columns": [
+            "course_id",
+            "number_of_credits"
+        ],
+        "value_mentions": null
+    },
+    {
+        "description": "The combination of course_name and number_of_credits determines the exam_duration. Courses with the same name and credit count must have the same exam duration.",
+        "category": "2. Functional Dependency (FD) Checking Rules",
+        "target_columns": [
+            "course_name",
+            "number_of_credits",
+            "exam_duration"
+        ],
+        "value_mentions": null
+    },
+    {
+        "description": "The course_id must not be unique. The count of distinct course_id values must be strictly less than the total number of records to ensure redundancy for FD testing.",
+        "category": "12. Aggregated Amount Checking Rules",
+        "target_columns": [
+            "course_id"
+        ],
+        "value_mentions": null
+    }
+]

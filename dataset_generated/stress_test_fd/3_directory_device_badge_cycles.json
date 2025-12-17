@@ -1,0 +1,74 @@
+[
+  {
+    "description": "The employee_full_name determines the corporate_username. In this dataset, the same employee full name must always map to the same corporate username.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["employee_full_name", "corporate_username"],
+    "value_mentions": null
+  },
+  {
+    "description": "The corporate_username determines the email_address. The same corporate username must always map to the same email address.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["corporate_username", "email_address"],
+    "value_mentions": null
+  },
+  {
+    "description": "The email_address determines the employee_full_name. The same email address must always map to the same employee full name.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["email_address", "employee_full_name"],
+    "value_mentions": null
+  },
+  {
+    "description": "The email_address determines the device_hostname. The same email address must always be associated with the same device hostname.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["email_address", "device_hostname"],
+    "value_mentions": null
+  },
+  {
+    "description": "The device_hostname determines the device_serial_number. The same device hostname must always map to the same device serial number.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["device_hostname", "device_serial_number"],
+    "value_mentions": null
+  },
+  {
+    "description": "The device_serial_number determines the email_address. The same device serial number must always be associated with the same email address.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["device_serial_number", "email_address"],
+    "value_mentions": null
+  },
+  {
+    "description": "The combination of employee_full_name and device_hostname determines the access_badge_code. The same employee on the same device hostname must always map to the same access badge code.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["employee_full_name", "device_hostname", "access_badge_code"],
+    "value_mentions": null
+  },
+  {
+    "description": "The access_badge_code determines the employee_full_name. The same access badge code must always map to the same employee full name.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["access_badge_code", "employee_full_name"],
+    "value_mentions": null
+  },
+  {
+    "description": "The combination of corporate_username and device_serial_number determines the device_hostname. The same username using the same serial number must always map to the same device hostname.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["corporate_username", "device_serial_number", "device_hostname"],
+    "value_mentions": null
+  },
+  {
+    "description": "The access_badge_code determines the corporate_username. The same access badge code must always map to the same corporate username.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["access_badge_code", "corporate_username"],
+    "value_mentions": null
+  },
+  {
+    "description": "The employee_full_name must not be unique. This forces the generator to simulate a log/audit scenario where the same person appears multiple times.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["employee_full_name"],
+    "value_mentions": null
+  },
+  {
+    "description": "The access_badge_code must not be unique. This ensures that the badge assignment remains consistent across multiple occurrences of the same employee.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["access_badge_code"],
+    "value_mentions": null
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "description": "The registration_number determines the license_plate. The same registration number must always map to the same license plate.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["registration_number", "license_plate"],
+    "value_mentions": null
+  },
+  {
+    "description": "The registration_number determines the country_code. A given registration number must always be associated with the same country code.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["registration_number", "country_code"],
+    "value_mentions": null
+  },
+  {
+    "description": "The combination of license_plate and country_code determines the vehicle_id. The same plate within the same country must always refer to the same vehicle.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["license_plate", "country_code", "vehicle_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "The vehicle_id determines the registration_number. Each vehicle identifier must always map back to the same registration number.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["vehicle_id", "registration_number"],
+    "value_mentions": null
+  },
+  {
+    "description": "The vehicle_id must not be unique. The count of distinct vehicle_id values must be strictly less than the total number of records to ensure redundancy for FD testing.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["vehicle_id"],
+    "value_mentions": null
+  }
+]

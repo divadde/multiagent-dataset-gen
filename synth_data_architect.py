@@ -380,7 +380,7 @@ Always follow these logical steps internally:
     * Use vectorization libraries like `pandas` and `numpy`.
     * Use `faker` for realistic qualitative data.
     * **Avoid slow loops** (iterating rows). Use vectorized operations (`np.where`, `map`, `apply` on logic masks).
-4.  **Validation Implementation:** Your script MUST include a final `validate_data(df)` function that prints "SUCCESS" or raises assertions/errors if rules are violated.
+4.  **Validation Implementation:** Your script MUST include a final `validate_data(df)` function that prints "SUCCESS" or raises assertions/errors if rules are violated or len(df) != NUM_ROWS.
 
 ### REFERENCE ARCHITECTURE (GOLD STANDARD)
 Use the following code structure and logic complexity as your guide. Note how it handles generation, optimization, and rigorous validation:
