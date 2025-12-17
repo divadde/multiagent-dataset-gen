@@ -1,0 +1,254 @@
+[
+    {
+        "description": "TEMPORAL: The admission_date must be strictly earlier than or equal to the treatment_start_date.",
+        "category": "1. Temporal Order Checking Rules",
+        "target_columns": ["admission_date", "treatment_start_date"],
+        "value_mentions": null
+    },
+    {
+        "description": "TEMPORAL: The treatment_start_date must be earlier than or equal to the treatment_end_date.",
+        "category": "1. Temporal Order Checking Rules",
+        "target_columns": ["treatment_start_date", "treatment_end_date"],
+        "value_mentions": null
+    },
+    {
+        "description": "TEMPORAL CHAIN: The treatment_end_date must be strictly earlier than or equal to the discharge_date. This completes the patient timeline.",
+        "category": "1. Temporal Order Checking Rules",
+        "target_columns": ["treatment_end_date", "discharge_date"],
+        "value_mentions": null
+    },
+    {
+        "description": "FD CYCLE START: The patient_id determines the assigned_ward_id. A patient stays in one specific ward.",
+        "category": "2. Functional Dependency (FD) Checking Rules",
+        "target_columns": ["patient_id", "assigned_ward_id"],
+        "value_mentions": null
+    },
+    {
+        "description": "FD CYCLE MID: The assigned_ward_id determines the head_nurse_id. Each ward has one unique head nurse.",
+        "category": "2. Functional Dependency (FD) Checking Rules",
+        "target_columns": ["assigned_ward_id", "head_nurse_id"],
+        "value_mentions": null
+    },
+    {
+        "description": "FD CYCLE END: The head_nurse_id determines the shift_manager_id. (This links back to staff hierarchy).",
+        "category": "2. Functional Dependency (FD) Checking Rules",
+        "target_columns": ["head_nurse_id", "shift_manager_id"],
+        "value_mentions": null
+    },
+    {
+        "description": "CFD: If admission_type is 'Emergency', then triage_code determines the max_wait_time.",
+        "category": "3. Conditional Functional Dependency (CFD) Rules",
+        "target_columns": ["admission_type", "triage_code", "max_wait_time"],
+        "value_mentions": ["Emergency"]
+    },
+    {
+        "description": "CFD: If staff_role is 'Surgeon', then staff_id determines the surgery_license_number.",
+        "category": "3. Conditional Functional Dependency (CFD) Rules",
+        "target_columns": ["staff_role","staff_id", "surgery_license_number"],
+        "value_mentions": ["Surgeon"]
+    },
+    {
+        "description": "CFD: If insurance_provider is 'Medicare', then procedure_code determines the reimbursement_cap.",
+        "category": "3. Conditional Functional Dependency (CFD) Rules",
+        "target_columns": ["insurance_provider","procedure_code", "reimbursement_cap"],
+        "value_mentions": ["Medicare"]
+    },
+    {
+        "description": "INTRA-REF (ASYMMETRY): A medical_unit_id cannot be its own parent_unit_id.",
+        "category": "4.1 Symmetry / Asymmetry and Transitivity Rules",
+        "target_columns": ["medical_unit_id", "parent_unit_id"],
+        "value_mentions": null
+    },
+    {
+        "description": "INTRA-REF (EQUALITY): If two units share the same parent_unit_id, they must be located in the same building_wing.",
+        "category": "4.2 Intra-Table Equality Rules",
+        "target_columns": ["parent_unit_id", "building_wing"],
+        "value_mentions": null
+    },
+    {
+        "description": "INTRA-REF (COMPARISON): The unit_budget of a child unit must be strictly less than the unit_budget of its parent_unit_id.",
+        "category": "4.3 Intra-Table Value Comparison Rules",
+        "target_columns": ["unit_budget", "parent_unit_id"],
+        "value_mentions": null
+    },
+    {
+        "description": "UNIQUE: The admission_id must be unique across the dataset.",
+        "category": "5. Unique Key Constraint Checking Rules",
+        "target_columns": ["admission_id"],
+        "value_mentions": null
+    },
+    {
+        "description": "UNIQUE COMPOSITE: The combination of patient_id and visit_date must be unique (One visit per day rule).",
+        "category": "5. Unique Key Constraint Checking Rules",
+        "target_columns": ["patient_id", "visit_date"],
+        "value_mentions": null
+    },
+    {
+        "description": "UNIQUE COMPOSITE: The combination of staff_id and shift_start_time must be unique.",
+        "category": "5. Unique Key Constraint Checking Rules",
+        "target_columns": ["staff_id", "shift_start_time"],
+        "value_mentions": null
+    },
+    {
+        "description": "FUZZY: Detect near-duplicate drug descriptions (e.g., 'Aspirin 100mg' vs 'Aspirin 100 mg').",
+        "category": "6. Advanced Duplicate Detection (Beyond Unique Keys)",
+        "target_columns": ["drug_description"],
+        "value_mentions": null
+    },
+    {
+        "description": "FUZZY: Identify potential patient duplicates where first_name and last_name are similar and dob is identical.",
+        "category": "6. Advanced Duplicate Detection (Beyond Unique Keys)",
+        "target_columns": ["first_name", "last_name", "dob"],
+        "value_mentions": null
+    },
+    {
+        "description": "FUZZY: Flag similar department names like 'Cardiology' and 'Dept of Cardiology'.",
+        "category": "6. Advanced Duplicate Detection (Beyond Unique Keys)",
+        "target_columns": ["department_name"],
+        "value_mentions": null
+    },
+    {
+        "description": "IMPLICATION (COMPLETENESS): If diagnosis_code is present, then treating_doctor_id must not be empty.",
+        "category": "7.1 Conditional Completeness Rules",
+        "target_columns": ["diagnosis_code", "treating_doctor_id"],
+        "value_mentions": null
+    },
+    {
+        "description": "IMPLICATION (VALUE): If ward_type is 'ICU', then nurse_patient_ratio must be exactly '1:1'.",
+        "category": "7.2 Concrete Value Rules",
+        "target_columns": ["ward_type", "nurse_patient_ratio"],
+        "value_mentions": ["ICU", "1:1"]
+    },
+    {
+        "description": "IMPLICATION (LOGIC): If patient_status is 'Discharged', then discharge_date must be present (Not Null).",
+        "category": "7.1 Conditional Completeness Rules",
+        "target_columns": ["patient_status", "discharge_date"],
+        "value_mentions": ["Discharged"]
+    },
+    {
+        "description": "SYNTAX: social_security_number must match the pattern ddd-dd-dddd.",
+        "category": "8. Syntactic Rules",
+        "target_columns": ["social_security_number"],
+        "value_mentions": null
+    },
+    {
+        "description": "SYNTAX: email_address must follow standard email regex formatting.",
+        "category": "8. Syntactic Rules",
+        "target_columns": ["email_address"],
+        "value_mentions": null
+    },
+    {
+        "description": "SYNTAX: blood_pressure must follow the format 'SYS/DIA' (e.g., 120/80).",
+        "category": "8. Syntactic Rules",
+        "target_columns": ["blood_pressure"],
+        "value_mentions": null
+    },
+    {
+        "description": "DOMAIN SYNTAX: internal_doc_link must start with 'https://hospital-intranet/'.",
+        "category": "9. Domain-Specific Syntactic Rules",
+        "target_columns": ["internal_doc_link"],
+        "value_mentions": null
+    },
+    {
+        "description": "DOMAIN SYNTAX: drug_lot_number must follow the manufacturer format 'LOT-[A-Z]{3}-\\d{4}'.",
+        "category": "9. Domain-Specific Syntactic Rules",
+        "target_columns": ["drug_lot_number"],
+        "value_mentions": null
+    },
+    {
+        "description": "DOMAIN SYNTAX: dicom_image_id must be a valid UUID string.",
+        "category": "9. Domain-Specific Syntactic Rules",
+        "target_columns": ["dicom_image_id"],
+        "value_mentions": null
+    },
+    {
+        "description": "COMP SYNTAX: The short_diagnosis_code must be strictly shorter than the full_diagnosis_description.",
+        "category": "10. Comparison Syntactic Rules",
+        "target_columns": ["short_diagnosis_code", "full_diagnosis_description"],
+        "value_mentions": null
+    },
+    {
+        "description": "COMP SYNTAX: staff_initials must be shorter than staff_last_name.",
+        "category": "10. Comparison Syntactic Rules",
+        "target_columns": ["staff_initials", "staff_last_name"],
+        "value_mentions": null
+    },
+    {
+        "description": "COMP SYNTAX: ward_code length must be less than or equal to 5 characters.",
+        "category": "10. Comparison Syntactic Rules",
+        "target_columns": ["ward_code"],
+        "value_mentions": null
+    },
+    {
+        "description": "AMOUNT: The insurance_payout must be less than or equal to the total_invoice_amount.",
+        "category": "11. Amount Comparison Rules",
+        "target_columns": ["insurance_payout", "total_invoice_amount"],
+        "value_mentions": null
+    },
+    {
+        "description": "AMOUNT: anesthesia_dosage must be strictly less than max_safe_dosage.",
+        "category": "11. Amount Comparison Rules",
+        "target_columns": ["anesthesia_dosage", "max_safe_dosage"],
+        "value_mentions": null
+    },
+    {
+        "description": "AMOUNT: patient_copay plus insurance_payout must equal total_invoice_amount.",
+        "category": "11. Amount Comparison Rules",
+        "target_columns": ["patient_copay", "insurance_payout", "total_invoice_amount"],
+        "value_mentions": null
+    },
+    {
+        "description": "AGGREGATION: Grouping by department_id, the sum of staff_salaries must be <= department_budget.",
+        "category": "12. Aggregated Amount Checking Rules",
+        "target_columns": ["department_id", "staff_salaries", "department_budget"],
+        "value_mentions": null
+    },
+    {
+        "description": "AGGREGATION: Grouping by ward_id, the count of active_patients must be <= total_beds.",
+        "category": "12. Aggregated Amount Checking Rules",
+        "target_columns": ["ward_id", "active_patients", "total_beds"],
+        "value_mentions": null
+    },
+    {
+        "description": "AGGREGATION: Grouping by doctor_id, the count of daily_consultations should not exceed 20 (Workload limit).",
+        "category": "12. Aggregated Amount Checking Rules",
+        "target_columns": ["doctor_id", "daily_consultations"],
+        "value_mentions": null
+    },
+    {
+        "description": "MONOTONICITY: recovery_score (0-10) should not decrease from day_1 to day_7 for successful treatments.",
+        "category": "13. Monotonicity Rules",
+        "target_columns": ["recovery_score_day_1", "recovery_score_day_7"],
+        "value_mentions": null
+    },
+    {
+        "description": "MONOTONICITY: pain_level (1-10) should strictly decrease from admission to discharge.",
+        "category": "13. Monotonicity Rules",
+        "target_columns": ["pain_level_admission", "pain_level_discharge"],
+        "value_mentions": null
+    },
+    {
+        "description": "MONOTONICITY: medication_dosage_step_1 < medication_dosage_step_2 (Titration Up Protocol).",
+        "category": "13. Monotonicity Rules",
+        "target_columns": ["medication_dosage_step_1", "medication_dosage_step_2"],
+        "value_mentions": null
+    },
+    {
+        "description": "OUTLIER: body_temperature_celsius should be within the range 35.0 to 42.0.",
+        "category": "14. Outlier Detection Rules",
+        "target_columns": ["body_temperature_celsius"],
+        "value_mentions": null
+    },
+    {
+        "description": "OUTLIER: heart_rate_bpm should be within 30 to 220.",
+        "category": "14. Outlier Detection Rules",
+        "target_columns": ["heart_rate_bpm"],
+        "value_mentions": null
+    },
+    {
+        "description": "OUTLIER: systolic_bp should be within 70 to 200.",
+        "category": "14. Outlier Detection Rules",
+        "target_columns": ["systolic_bp"],
+        "value_mentions": null
+    }
+]

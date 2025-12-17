@@ -6,8 +6,8 @@ from synth_data_architect import generate_synthetic_dataset
 if __name__ == "__main__":
     # Example Parameters
     N_ROWS = 1000000
-    JSON_FILE = "dataset_generated/stress_test_fd/final_test.json"
-    SCHEMA = "Infer from the rules \"target columns\". [No assertion needed to verify] "
+    JSON_FILE = "dataset_generated/stress_test_general/hospital_rules.json"
+    SCHEMA = "Infer from the rules \"target columns\". [No assertion needed to verify the schema] "
     with open(JSON_FILE, 'r', encoding='utf-8') as f:
         data = json.load(f)
     RULES = data
