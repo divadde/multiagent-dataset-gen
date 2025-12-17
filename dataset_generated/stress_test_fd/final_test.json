@@ -1,0 +1,311 @@
+[
+  {
+    "description": "CYCLE 1 (HR): The employee_id determines the corporate_username.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["employee_id", "corporate_username"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 1 (HR): The corporate_username determines the company_email.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["corporate_username", "company_email"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 1 (HR CLOSING): The company_email determines the employee_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["company_email", "employee_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 2 (DEPT): The department_code determines the department_name.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["department_code", "department_name"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 2 (DEPT): The department_name determines the cost_center_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["department_name", "cost_center_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 2 (DEPT CLOSING): The cost_center_id determines the department_code.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["cost_center_id", "department_code"],
+    "value_mentions": null
+  },
+  {
+    "description": "LINK HR-DEPT: The employee_id determines the department_code (an employee belongs to one dept).",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["employee_id", "department_code"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 3 (ASSETS): The laptop_serial_number determines the mac_address.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["laptop_serial_number", "mac_address"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 3 (ASSETS): The mac_address determines the asset_tag_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["mac_address", "asset_tag_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 3 (ASSETS CLOSING): The asset_tag_id determines the laptop_serial_number.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["asset_tag_id", "laptop_serial_number"],
+    "value_mentions": null
+  },
+  {
+    "description": "LINK HR-ASSETS: The laptop_serial_number determines the current_assigned_employee_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["laptop_serial_number", "employee_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "HIERARCHY: The floor_number determines the building_wing.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["floor_number", "building_wing"],
+    "value_mentions": null
+  },
+  {
+    "description": "HIERARCHY: The office_room_number determines the floor_number.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["office_room_number", "floor_number"],
+    "value_mentions": null
+  },
+  {
+    "description": "COMPOSITE KEY: The combination of employee_id and day_of_week determines the assigned_parking_spot.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["employee_id", "day_of_week", "assigned_parking_spot"],
+    "value_mentions": null
+  },
+  {
+    "description": "COMPOSITE REVERSE: The combination of assigned_parking_spot and day_of_week determines the employee_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["assigned_parking_spot", "day_of_week", "employee_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "LOGIC: If badge_status is Active, access_level must strictly determine security_zone.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["access_level", "security_zone"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 4 (BADGE): badge_id determines nfc_chip_code.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["badge_id", "nfc_chip_code"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 4 (BADGE CLOSING): nfc_chip_code determines badge_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["nfc_chip_code", "badge_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "LINK HR-BADGE: badge_id determines employee_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["badge_id", "employee_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: employee_id must NOT be unique (Audit Log Simulation).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["employee_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: laptop_serial_number must NOT be unique (Maintenance Log Simulation).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["laptop_serial_number"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: department_code must NOT be unique.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["department_code"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: badge_id must NOT be unique (Access Log Simulation).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["badge_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: assigned_parking_spot must NOT be unique (Shared across days).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["assigned_parking_spot"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: cost_center_id must NOT be unique.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["cost_center_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "HIERARCHY: The product_id determines the product_name. Standard catalog definition.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["product_id", "product_name"],
+    "value_mentions": null
+  },
+  {
+    "description": "HIERARCHY: The product_name determines the sub_category_code. Names are standardized per category.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["product_name", "sub_category_code"],
+    "value_mentions": null
+  },
+  {
+    "description": "HIERARCHY: The sub_category_code determines the main_category_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["sub_category_code", "main_category_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "LOGIC: The main_category_id determines the vat_tax_rate. Tax rates depend on product type.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["main_category_id", "vat_tax_rate"],
+    "value_mentions": null
+  },
+  {
+    "description": "GEO: The warehouse_zip_code determines the warehouse_city.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["warehouse_zip_code", "warehouse_city"],
+    "value_mentions": null
+  },
+  {
+    "description": "GEO: The warehouse_city determines the warehouse_region_state.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["warehouse_city", "warehouse_region_state"],
+    "value_mentions": null
+  },
+  {
+    "description": "GEO: The warehouse_region_state determines the country_iso_code.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["warehouse_region_state", "country_iso_code"],
+    "value_mentions": null
+  },
+  {
+    "description": "GEO: The country_iso_code determines the local_currency.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["country_iso_code", "local_currency"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 5 (SUPPLIER): supplier_id determines main_contact_email.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["supplier_id", "main_contact_email"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 5 (SUPPLIER CLOSING): main_contact_email determines supplier_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["main_contact_email", "supplier_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "COMPOSITE KEY: The combination of order_id and order_line_number determines the product_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["order_id", "order_line_number", "product_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "COMPOSITE PRICING: The combination of product_id and customer_tier determines the unit_price_applied.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["product_id", "customer_tier", "unit_price_applied"],
+    "value_mentions": null
+  },
+  {
+    "description": "MASTER-DETAIL: The order_id determines the customer_id. All lines in an order belong to one customer.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["order_id", "customer_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "MASTER-DETAIL: The order_id determines the order_date. All lines must share the same date.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["order_id", "order_date"],
+    "value_mentions": null
+  },
+  {
+    "description": "CUSTOMER: The customer_id determines the assigned_sales_rep_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["customer_id", "assigned_sales_rep_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "LOGISTICS: The shipping_tracking_code determines the order_id.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["shipping_tracking_code", "order_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "BATCH: The batch_lot_number determines the manufacture_date.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["batch_lot_number", "manufacture_date"],
+    "value_mentions": null
+  },
+  {
+    "description": "BATCH: The batch_lot_number determines the expiration_date.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["batch_lot_number", "expiration_date"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: order_id must NOT be unique. Essential to test Master-Detail consistency (multiple lines per order).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["order_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: product_id must NOT be unique (Sales History).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["product_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: customer_id must NOT be unique (Repeat Buyers).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["customer_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: warehouse_zip_code must NOT be unique.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["warehouse_zip_code"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: batch_lot_number must NOT be unique (Inventory spread).",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["batch_lot_number"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: assigned_sales_rep_id must NOT be unique.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["assigned_sales_rep_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY: main_category_id must NOT be unique.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["main_category_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "GLOBAL UNIQUENESS: The combination of all columns (or the logical primary key) must be unique. No exact row duplicates are allowed.",
+    "category": "5. Unique Key Constraint Checking Rules",
+    "target_columns": [
+        "order_id",
+        "order_line_number"
+    ],
+    "value_mentions": null
+}
+]

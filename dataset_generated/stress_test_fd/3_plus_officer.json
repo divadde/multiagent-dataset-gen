@@ -1,0 +1,50 @@
+[
+  {
+    "description": "CYCLE 1: The sector_id determines the clearance_level. Each sector has a fixed required security clearance.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["sector_id", "clearance_level"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 1: The clearance_level determines the officer_id. Specific clearance levels are overseen by a single specific officer.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["clearance_level", "officer_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CYCLE 1 (CLOSING): The officer_id determines the sector_id. Each officer is permanently assigned to command exactly one sector.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["officer_id", "sector_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "COMPOSITE DEPENDENCY: The combination of sector_id and officer_id determines the access_code_prefix. This tests multi-column consistency.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["sector_id", "officer_id", "access_code_prefix"],
+    "value_mentions": null
+  },
+  {
+    "description": "REVERSE DEPENDENCY: The access_code_prefix determines the clearance_level. The code implies the security level directly.",
+    "category": "2. Functional Dependency (FD) Checking Rules",
+    "target_columns": ["access_code_prefix", "clearance_level"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY STRESS: sector_id must NOT be unique. High repetition is required to test consistency across multiple rows.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["sector_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY STRESS: officer_id must NOT be unique. High repetition is required.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["officer_id"],
+    "value_mentions": null
+  },
+  {
+    "description": "CARDINALITY STRESS: access_code_prefix must NOT be unique. Even the generated codes must repeat to verify reverse consistency.",
+    "category": "12. Aggregated Amount Checking Rules",
+    "target_columns": ["access_code_prefix"],
+    "value_mentions": null
+  }
+]

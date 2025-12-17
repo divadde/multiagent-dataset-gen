@@ -95,10 +95,23 @@ def check_data_quality(csv_file_path, json_rules_path):
             else:
                 print("  [INFO] Logica di aggregazione complessa non implementata in questo script base.")
 
-        else:
-            print(f"  [INFO] Categoria '{category}' non ancora implementata.")
 
-        print("")  # Riga vuota
+        elif "Unique Key Constraint" in category:
+            # Verifica che la combinazione delle colonne target sia unica
+            if not all(col in df.columns for col in targets):
+                print(f"  [ERRORE] Colonne mancanti: {targets}")
+                continue
+
+            # Conta duplicati sulla combinazione di colonne
+            duplicates = df.duplicated(subset=targets, keep=False)
+            num_duplicates = duplicates.sum()
+
+            if num_duplicates > 0:
+                print(f"  [FAIL] Trovate {num_duplicates} righe duplicate per la chiave {targets}!")
+                print(df[duplicates].sort_values(by=targets).head(4).to_string(index=False))
+                violations_count += 1
+            else:
+                print(f"  [OK] Nessun duplicato trovato per la chiave {targets}.")
 
     # Riepilogo finale
     if violations_count == 0:
@@ -107,7 +120,9 @@ def check_data_quality(csv_file_path, json_rules_path):
         print(f"\n❌ FALLIMENTO: Trovate {violations_count} violazioni delle regole.")
 
 if __name__ == "__main__":
-    check_data_quality('0_rombo_dataset.csv', '0_rombo.json')
-    check_data_quality('1_rombo_ciclo.csv', '1_rombo_ciclo.json')
-    check_data_quality('2_it_asset_identity_cycle_dataset.csv', '2_it_asset_identity_cycles.json')
-    check_data_quality('3_directory_device_badge.csv', '3_directory_device_badge_cycles.json')
+    #check_data_quality('0_rombo_dataset.csv', '0_rombo.json')
+    #check_data_quality('1_rombo_ciclo.csv', '1_rombo_ciclo.json')
+    #check_data_quality('2_it_asset_identity_cycle_dataset.csv', '2_it_asset_identity_cycles.json')
+    #check_data_quality('3_directory_device_badge.csv', '3_directory_device_badge_cycles.json')
+
+    check_data_quality('final_test.csv', 'final_test.json')
