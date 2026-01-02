@@ -1,8 +1,8 @@
 import concurrent
 
 from langgraph.graph import StateGraph, START, END
-from master_agent import GraphState, master_planner_node
-from synth_data_architect import worker_generator_node
+from workflow.master_agent import GraphState, master_node, distribute_tasks
+from workflow.synth_data_architect import worker_generator_node
 import json
 import re
 import pandas as pd
@@ -46,24 +46,26 @@ def code_merger_node(state: GraphState):
         "# --- GENERATED PARTIAL FUNCTIONS ---\n\n"
     )
 
-    # Iteriamo usando l'indice per creare nomi univoci
     for i, snippet in enumerate(snippets):
-        unique_func_name = f"generate_batch_{i}"
+        unique_gen_name = f"generate_batch_{i}"
+        unique_val_name = f"validate_dataset_{i}"  # <--- NUOVO NOME UNIVOCO PER VALIDATOR
 
-        # Sostituzione Regex: trasforma "def generate_dataset(" in "def generate_batch_X("
-        # Gestisce spazi variabili tra def, nome e parentesi
+        # --- FIX IMPORTANTE: SOSTITUZIONE GLOBALE ---
+        # Sostituiamo 'generate_dataset' ovunque appaia come parola intera (\b)
         modified_snippet = re.sub(
-            r"def\s+generate_dataset\s*\(",
-            f"def {unique_func_name}(",
+            r"\bgenerate_dataset\b",
+            unique_gen_name,
             snippet
         )
 
-        # Se la regex non ha trovato nulla (magari il worker ha usato un altro nome),
-        # proviamo a cercare il nome usato per aggiustare il tiro, o assumiamo sia fallito il replace.
-        # Per sicurezza, controlliamo se il replace è avvenuto effettivamente.
-        if unique_func_name not in modified_snippet:
-            print(f"⚠️ Warning: Could not rename function in snippet {i}. Using raw snippet.")
-            # Qui si potrebbe aggiungere una logica di fallback più complessa
+        # --- NUOVA FIX: SOSTITUZIONE VALIDATE_DATA ---
+        # Sostituiamo 'validate_data' ovunque (definizione e chiamata) con 'validate_data_i'
+        # Questo previene conflitti se i worker definiscono funzioni di validazione identiche
+        modified_snippet = re.sub(
+            r"\bvalidate_dataset\b",
+            unique_val_name,
+            modified_snippet
+        )
 
         # Aggiungiamo lo snippet MODIFICATO allo script finale
         final_script += modified_snippet + "\n\n"
@@ -72,15 +74,22 @@ def code_merger_node(state: GraphState):
         try:
             exec(modified_snippet, exec_context)
 
-            # Verifichiamo che la funzione esista nel contesto
-            if unique_func_name in exec_context:
-                function_names.append(unique_func_name)
-                functions_to_run[unique_func_name] = exec_context[unique_func_name]
+            # Verifichiamo che la funzione di generazione esista nel contesto
+            if unique_gen_name in exec_context:
+                function_names.append(unique_gen_name)
+                functions_to_run[unique_gen_name] = exec_context[unique_gen_name]
             else:
-                print(f"❌ [MERGER] Function {unique_func_name} not found after exec.")
+                # Fallback check
+                found = False
+                for key in exec_context:
+                    if key == unique_gen_name:
+                        found = True
+                        break
+                if not found:
+                    print(f"❌ [MERGER] Function {unique_gen_name} not found after exec.")
 
         except Exception as e:
-            print(f"❌ [MERGER] Error defining function {unique_func_name}: {e}")
+            print(f"❌ [MERGER] Error defining functions for batch {i}: {e}")
 
     function_names.sort()
 
@@ -157,30 +166,28 @@ def code_merger_node(state: GraphState):
 
 # --- COSTRUZIONE DEL GRAFO ---
 def build_parallel_graph():
-    """
-    Costruisce il grafo di esecuzione:
-    START -> Master -> (Map: Workers) -> Merger -> END
-    """
     workflow = StateGraph(GraphState)
 
-    # Aggiungi i nodi
-    workflow.add_node("master", master_planner_node)
+    # 1. Aggiungi il nodo Master (che ora è un nodo standard)
+    workflow.add_node("master", master_node)
+
+    # 2. Aggiungi il nodo Worker
     workflow.add_node("worker_node", worker_generator_node)
+
+    # 3. Aggiungi il nodo Merger
     workflow.add_node("merger", code_merger_node)
 
-    # Entry point
+    # Entry point -> Master
     workflow.add_edge(START, "master")
 
-    # Map-Reduce: Master -> (Multipli Workers in Parallelo)
-    # LangGraph gestisce automaticamente la lista di oggetti Send ritornata dal Master.
-    # Ogni oggetto Send attiverà un'istanza di "worker_node" in parallelo.
-    workflow.add_conditional_edges("master", lambda x: x, ["worker_node"])
+    # Map-Reduce:
+    # L'uscita del nodo "master" attiva la funzione "distribute_tasks".
+    # "distribute_tasks" restituisce una lista di Send(), che LangGraph mappa su "worker_node".
+    workflow.add_conditional_edges("master", distribute_tasks, ["worker_node"])
 
-    # Fan-in: Tutti i worker, una volta finito, passano il risultato al Merger
-    # LangGraph attende che tutti i rami paralleli finiscano prima di chiamare il nodo successivo.
+    # Fan-in: Tutti i worker confluiscono nel Merger
     workflow.add_edge("worker_node", "merger")
 
-    # Fine
     workflow.add_edge("merger", END)
 
     return workflow.compile()

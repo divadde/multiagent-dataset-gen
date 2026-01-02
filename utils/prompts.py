@@ -83,7 +83,7 @@ def generate_dataset(num_rows):
 
     return df
 
-def validate_data(df):
+def validate_dataset(df):
     print("--- Validating Data ---")
     # Check 1: Nullable Integer check
     assert pd.api.types.is_integer_dtype(df['days_stayed']), "Days stayed should be nullable int type"
@@ -96,7 +96,7 @@ def validate_data(df):
 
 # Execution
 df = generate_dataset(NUM_ROWS)
-validate_data(df)
+validate_dataset(df)
 df.to_csv("dataset.csv", index=False)
 '''
 
@@ -105,5 +105,5 @@ df.to_csv("dataset.csv", index=False)
 2. DO NOT use markdown formatting (no backticks like ```python).
 3. The function must return a pd.DataFrame containing ONLY the target columns.
 4. Import necessary libraries inside the function (e.g., import pandas as pd, import numpy as np, from faker import Faker).
-5. DO NOT include if __name__ == "__main__" blocks.
+5. DO NOT include if __name__ == "__main__" blocks. Be sure to include a variable "df" as shown in the example.
 """

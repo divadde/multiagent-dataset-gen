@@ -5,3 +5,4 @@ langgraph==1.0.4
 numpy==2.3.5
 pandas==2.3.3
 networkx~=3.6.1
+matplotlib>=3.8.0

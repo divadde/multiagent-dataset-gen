@@ -168,6 +168,67 @@ def plan_generation_tasks(rules: List[Dict], max_rules: int = 8):
     return batches
 
 
+import networkx as nx
+import itertools
+import matplotlib.pyplot as plt  # <--- Aggiungi questo import
+from typing import List, Dict, Any
+from collections import defaultdict
+
+
+# ... (Lascia invariate le funzioni esistenti: analyze_rule_dependencies, get_clusters_from_rules, etc.) ...
+
+def visualize_attribute_dependencies(rules: List[Dict], output_path: str = "attribute_dependencies.png"):
+    """
+    Genera un grafo visivo delle dipendenze tra gli attributi basato sulle regole
+    e lo salva come immagine PNG.
+    """
+    print(f"📊 Generazione grafico dipendenze in '{output_path}'...")
+
+    G = nx.Graph()
+
+    # 1. Costruzione del Grafo (Attributi = Nodi, Regole = Archi)
+    for rule in rules:
+        targets = rule.get("target_columns", [])
+        if not targets:
+            continue
+
+        # Aggiungi i nodi (attributi)
+        for col in targets:
+            G.add_node(col)
+
+        # Se la regola coinvolge più colonne, crea archi tra loro
+        if len(targets) > 1:
+            for col1, col2 in itertools.combinations(targets, 2):
+                G.add_edge(col1, col2)
+
+    # 2. Configurazione del Plot
+    plt.figure(figsize=(14, 10))
+
+    # Calcolo del layout (Spring layout distanzia i nodi in base agli archi)
+    # k regola la distanza ottimale tra i nodi
+    pos = nx.spring_layout(G, k=0.5, iterations=50, seed=42)
+
+    # Disegno dei nodi
+    nx.draw_networkx_nodes(G, pos, node_size=2000, node_color="lightblue", alpha=0.9)
+
+    # Disegno degli archi
+    nx.draw_networkx_edges(G, pos, width=1.5, alpha=0.6, edge_color="gray")
+
+    # Disegno delle etichette (nomi colonne)
+    nx.draw_networkx_labels(G, pos, font_size=9, font_family="sans-serif", font_weight="bold")
+
+    plt.title(f"Attribute Dependency Graph ({len(rules)} Rules, {G.number_of_nodes()} Attributes)", fontsize=16)
+    plt.axis("off")  # Nasconde gli assi cartesiani
+
+    # 3. Salvataggio
+    try:
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        print("✅ Grafico salvato con successo.")
+    except Exception as e:
+        print(f"❌ Errore nel salvataggio del grafico: {e}")
+    finally:
+        plt.close()  # Chiude la figura per liberare memoria
+
 # Esempio di utilizzo con il caricamento del file
 if __name__ == "__main__":
     with open("../dataset_generated/stress_test_general/hospital_rules.json", "r") as f:

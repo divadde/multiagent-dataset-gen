@@ -46,85 +46,61 @@ llm_check = ChatOpenAI(model="gpt-5.2", temperature=0, reasoning_effort="high")
 def code_generator_node(state: GraphState):
     print(f"   ⚙️ [Worker {state['batch_id']}] Attempt {state['iterations'] + 1} generating code...")
 
-    # Recupera lo storico attuale (o lista vuota se None)
     current_history = state.get("error_history", [])
 
-    # Se c'è un errore dal tentativo precedente, lo aggiungiamo allo storico
     if state.get("validation_error"):
         new_error_entry = (
             f"Attempt {state['iterations']}:\n"
             f"Error: {state['validation_error']}\n"
-            f"Code snippet responsible (context): See previous code execution."
+            f"Code snippet responsible: See previous execution."
         )
         current_history.append(new_error_entry)
 
-    # Costruzione Prompt
     rules_str = str(state["subset_rules"])
     cols_str = ", ".join(state["subset_columns"])
     num_rows = state["num_rows"]
 
     user_msg_content = f"""### CONFIGURATION
-- Function Name: `generate_dataset(num_rows)`
+- Function Name: `generate_dataset(num_rows)` and `validate_dataset(df)`
 - Target Columns: {cols_str}
 - Rows to generate: {num_rows}
 
 ### STRICT BUSINESS RULES (Apply ALL of them):
 {rules_str}"""
 
-    # Se abbiamo uno storico di errori, lo iniettiamo nel prompt
     if current_history:
         history_text = "\n\n".join(current_history)
         user_msg_content += (
             f"\n\n!!! HISTORY OF PREVIOUS FAILURES !!!\n"
-            f"You have already tried to generate this code {len(current_history)} times. "
-            f"Here is the log of past errors you MUST avoid repeating:\n"
-            f"==================================================\n"
             f"{history_text}\n"
-            f"==================================================\n"
-            f"CRITICAL INSTRUCTION: Analyze the entire history above. "
-            f"Do not revert to old code that caused these errors. "
-            f"Implement a NEW solution that fixes the latest error without re-introducing previous ones."
+            f"CRITICAL: Fix the error without re-introducing old ones."
         )
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "{system_prompt}"), #"{reference_code}"
+        ("system", "{system_prompt}"),
         ("user", "{user_msg}")
     ])
-
-    # Debugging
-    #print(prompt.invoke({"user_msg": user_msg_content, "reference_code": REFERENCE_CODE_CONTENT}))
 
     chain = prompt | llm
 
     response = chain.invoke({
         "system_prompt": SYNTH_DATA_ARCHITECT_PROMPT,
-        #"reference_code": REFERENCE_CODE_CONTENT,
         "user_msg": user_msg_content
     })
 
-    # --- Logica di estrazione codice (invariata) ---
-    content_data = response.content
-    code_text = ""
-    if isinstance(content_data, list):
-        for block in content_data:
-            if isinstance(block, dict) and block.get('type') == 'text':
-                code_text = block['text']
-                break
-    else:
-        code_text = str(content_data)
+    # --- MODIFICA CRITICA: Estrazione robusta ---
+    # Passiamo 'response' direttamente. La funzione gestirà sia se è AIMessage, str o dict.
+    clean_code = extract_code_from_message(response)
+    # --------------------------------------------
 
-    clean_code = extract_code_from_message(code_text)
-    # -----------------------------------------------
-
-    print(f"Code generated (Length: {len(clean_code)} chars)")
+    print(f"   ✅ Code generated (Length: {len(clean_code)} chars)")
 
     return {
         "generated_code": clean_code,
         "iterations": state["iterations"] + 1,
-        "validation_error": None,  # Resettiamo l'errore corrente perché stiamo provando una fix
-        "error_history": current_history  # Passiamo lo storico aggiornato al prossimo step
+        "validation_error": None,
+        "error_history": current_history
     }
-
 
 def code_executor_node(state: GraphState):
     print("--- CODE EXECUTION ---")
@@ -146,11 +122,15 @@ def code_executor_node(state: GraphState):
         exec(code, execution_context)
 
         if "df" not in execution_context:
-            raise ValueError("'df' was not generated.")
+            raise ValueError("Variable 'df' was not generated.")
 
         # 2. Verifica che la funzione esista
         if "generate_dataset" not in execution_context:
             raise ValueError(f"Function \"generate_dataset\" not found in generated code.")
+
+        # 2. Verifica che la funzione esista
+        if "validate_dataset" not in execution_context:
+            raise ValueError(f"Function \"validate_dataset\" not found in generated code.")
 
         df = execution_context["df"]
 
@@ -251,14 +231,14 @@ def file_saver_node(state: GraphState):
 
 def route_after_execution(state: GraphState):
     if not state["execution_success"]:
-        if state["iterations"] >= state["max_iterations"]:
+        if state["iterations"] >= state["max_retries"]:
             return "failed"
         return "retry_coding"
     return "check_hallucination"
 
 def route_after_check(state: GraphState):
     if state["validation_error"]:
-        if state["iterations"] >= state["max_iterations"]:
+        if state["iterations"] >= state["max_retries"]:
             return "failed"
         return "retry_coding"
     return "save_file"
